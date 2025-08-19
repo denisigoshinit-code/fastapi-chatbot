@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ассистент</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+        :root {
+            --primary-color: #007bff; /* Синий */
+            --secondary-color: #f8f9fa; /* Светло-серый */
+            --background-color: #e9ecef; /* Серый фон */
+            --text-color: #333333;
+            --container-bg-color: #ffffff;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background-color: var(--container-bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: var(--secondary-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background-color: var(--container-bg-color);
+        }
+
+        .input-area input {
+            flex-grow: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid #ccc;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+        }
+
+        .input-area button {
+            padding: 12px 20px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            border-radius: 25px;
+            margin-left: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI Ассистент</h1>
+        </header>
+
+        <div class="chat-container" id="chat-container">
+            <div class="message bot-message" id="initial-message">Привет! Я готов к общению.</div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Введите ваш вопрос...">
+            <button id="send-button">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (text === '') return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+
+            const response = await fetch(`/ask/?q=${encodeURIComponent(text)}`);
+            const data = await response.json();
+            
+            const botResponse = data.response;
+            addMessage(botResponse, 'bot');
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+
+</body>
+</html>
